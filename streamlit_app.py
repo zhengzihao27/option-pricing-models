@@ -1,9 +1,7 @@
 import streamlit as st
 from enum import Enum
 from datetime import datetime, timedelta
-import yfinance as yf
 from option_pricing import BlackScholesModel, MonteCarloPricing, BinomialTreeModel, Ticker
-import json
 
 class OPTION_PRICING_MODEL(Enum):
     BLACK_SCHOLES = 'Black Scholes Model'
@@ -18,8 +16,8 @@ def fetch_historical_data(ticker):
 
 @st.cache_data(ttl=CACHE_TTL_SECONDS)
 def fetch_current_price(ticker):
-    data = yf.Ticker(ticker).history(period="5d")
-    close_prices = data['Close'].dropna()
+    data = fetch_historical_data(ticker)
+    close_prices = data["Close"].dropna()
     if close_prices.empty:
         raise ValueError(f"No close price returned for {ticker}")
     return close_prices.iloc[-1]

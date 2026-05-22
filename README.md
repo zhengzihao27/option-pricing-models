@@ -53,6 +53,7 @@ Black-Scholes 模型用于计算欧式期权的理论价格。模型假设标的
 ├── streamlit_app.py             # Streamlit Web 应用入口
 ├── option_pricing_test.py       # 简单测试脚本
 ├── requirements.txt             # Python 依赖
+├── data_cache/                  # 已缓存的本地行情数据
 ├── Dockerfile                   # Docker 运行配置
 └── app.yaml                     # Google Cloud App Engine 配置
 ```
@@ -110,7 +111,16 @@ http://127.0.0.1:8080
 
 ## 数据来源
 
-项目使用 `yfinance` 获取 Yahoo Finance 上的行情数据，典型调用方式如下：
+项目优先读取 `data_cache/` 中的本地行情缓存。缓存不存在时，才会使用 `yfinance` 从 Yahoo Finance 获取行情数据，并在请求成功后写入本地缓存。
+
+仓库中已包含默认示例股票的缓存数据：
+
+```text
+data_cache/AAPL_history.csv
+data_cache/TSLA_history.csv
+```
+
+典型调用方式如下：
 
 ```python
 import yfinance as yf
@@ -126,6 +136,8 @@ Open, High, Low, Close, Volume, Dividends, Stock Splits
 ```
 
 其中项目主要使用 `Close` 作为标的资产价格。
+
+如果需要刷新某只股票的缓存，可以删除对应的 `data_cache/{TICKER}_history.csv` 文件，然后重新运行应用；下一次成功请求 Yahoo Finance 后会重新生成缓存。
 
 需要注意的是，`yfinance` 是第三方开源库，不是 Yahoo 官方 API。它适合个人学习、研究和课程项目使用；如果要用于商业产品、批量抓取或对外提供行情数据，应使用正式授权的数据服务。
 
