@@ -10,20 +10,32 @@ class OPTION_PRICING_MODEL(Enum):
     MONTE_CARLO = 'Monte Carlo Simulation'
     BINOMIAL = 'Binomial Model'
 
-@st.cache_data
+CACHE_TTL_SECONDS = 60 * 60
+
+@st.cache_data(ttl=CACHE_TTL_SECONDS)
+def fetch_historical_data(ticker):
+    return Ticker.get_historical_data(ticker)
+
+@st.cache_data(ttl=CACHE_TTL_SECONDS)
+def fetch_current_price(ticker):
+    data = yf.Ticker(ticker).history(period="5d")
+    close_prices = data['Close'].dropna()
+    if close_prices.empty:
+        raise ValueError(f"No close price returned for {ticker}")
+    return close_prices.iloc[-1]
+
 def get_historical_data(ticker):
+    ticker = ticker.strip().upper()
     try:
-        data = Ticker.get_historical_data(ticker)
-        return data
+        return fetch_historical_data(ticker)
     except Exception as e:
         st.error(f"Error fetching data for {ticker}: {str(e)}")
         return None
 
-@st.cache_data
 def get_current_price(ticker):
+    ticker = ticker.strip().upper()
     try:
-        data = yf.Ticker(ticker).history(period="1d")
-        return data['Close'].iloc[-1]
+        return fetch_current_price(ticker)
     except Exception as e:
         st.error(f"Error fetching current price for {ticker}: {str(e)}")
         return None

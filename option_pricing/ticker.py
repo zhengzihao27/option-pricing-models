@@ -6,6 +6,7 @@ import pandas as pd
 class Ticker:
     @staticmethod
     def get_historical_data(ticker, start_date=None, end_date=None):
+        ticker = ticker.strip().upper()
         try:
             if start_date is None:
                 start_date = datetime.datetime.now() - datetime.timedelta(days=365)
