@@ -1,9 +1,13 @@
-# Directories to ignore
+# 忽略目录
 .vscode/
 __pycache__
 virtualenv
 venv
+.venv/
+.venv-*/
+.conda/
 
-# Files to ignore
+# 忽略文件
 *.pyc
 *.sqlite
+*.log

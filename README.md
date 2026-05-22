@@ -1,116 +1,159 @@
-# Option Pricing Models
+# 期权定价模型 Web 应用
 
-## Introduction
-This repository contains a simple web app for calculating European option prices using three different methods:
+这是一个基于 Streamlit 的期权定价演示项目，用于计算欧式期权价格，并对不同定价模型的结果进行比较。
 
-1. Black-Scholes model
-2. Monte Carlo simulation
-3. Binomial model
+项目当前支持三种定价方法：
 
-The app is implemented in Python 3.9 and uses the Streamlit library for visualization.
+1. Black-Scholes 模型
+2. 蒙特卡洛模拟
+3. 二叉树模型
 
-## Option Pricing Methods
+应用会通过 `yfinance` 从 Yahoo Finance 获取股票历史行情和最近收盘价，并将股票价格作为期权定价中的标的资产现货价格。
 
-### 1. Black-Scholes Model
-A mathematical model used to calculate the theoretical price of European-style options, based on factors like current stock price, strike price, time to expiration, risk-free rate, and volatility.
+## 功能
 
-### 2. Monte Carlo Simulation
-A probabilistic method that uses random sampling to estimate option prices by simulating multiple possible price paths of the underlying asset.
+- 输入股票代码，例如 `AAPL`、`TSLA`
+- 自动获取股票最近价格和历史行情
+- 支持设置期权参数：
+  - 行权价
+  - 无风险利率
+  - 波动率
+  - 到期日
+  - 蒙特卡洛模拟次数
+  - 二叉树时间步数
+- 展示历史价格走势图
+- 计算看涨期权和看跌期权价格
+- 对蒙特卡洛模拟路径进行可视化
 
-### 3. Binomial Model
-A discrete-time model that represents the evolution of the underlying asset's price as a binomial tree, allowing for the calculation of option prices at different time steps.
+## 定价模型
 
-## Features
+### Black-Scholes 模型
 
-- Fetches latest stock price data from Yahoo Finance API using pandas-datareader
-- Caches data using requests-cache to avoid duplicate API calls
-- Allows users to input various parameters:
-  - Strike price
-  - Risk-free rate (%)
-  - Sigma (Volatility) (%)
-  - Exercise date
-- Calculates option prices based on user inputs
-- Provides a user-friendly interface for testing different scenarios
+Black-Scholes 模型用于计算欧式期权的理论价格。模型假设标的资产收益服从对数正态分布，并使用现货价格、行权价、到期时间、无风险利率和波动率计算期权价格。
 
-## Project Structure
+### 蒙特卡洛模拟
 
-- `demo/`: Contains GIF files demonstrating the Streamlit app
-- `option_pricing/`: Python package containing model implementations
-- `streamlit_app.py`: Main script for the Streamlit web app
-- `Requirements.txt`: List of required Python packages
-- `Dockerfile`: Configuration for running the app in a Docker container
+蒙特卡洛方法通过随机生成大量可能的未来价格路径，估算期权到期时的收益，并将平均收益折现为当前价格。
 
-## How to Run the App
+### 二叉树模型
 
-### Using Docker Locally
-The easiest way to run the app is using Docker. Make sure you have Docker installed on your machine before proceeding.
+二叉树模型将标的资产价格的变化拆分为多个离散时间步，每一步价格可以上涨或下跌。模型从到期日收益开始反向递推，最终得到当前期权价格。
 
-1. Navigate to the repository directory in your terminal.
+## 项目结构
 
-2. Build the Docker image:
-   ```
-   docker build -t options-pricing:latest .
-   ```
+```text
+.
+├── option_pricing/              # 期权定价模型实现
+│   ├── BlackScholesModel.py     # Black-Scholes 模型
+│   ├── MonteCarloSimulation.py  # 蒙特卡洛模拟模型
+│   ├── BinomialTreeModel.py     # 二叉树模型
+│   ├── base.py                  # 定价模型抽象基类
+│   └── ticker.py                # 股票行情获取和绘图工具
+├── media/                       # 应用演示 GIF
+├── streamlit_app.py             # Streamlit Web 应用入口
+├── option_pricing_test.py       # 简单测试脚本
+├── requirements.txt             # Python 依赖
+├── Dockerfile                   # Docker 运行配置
+└── app.yaml                     # Google Cloud App Engine 配置
+```
 
-3. Verify the image was built successfully:
-   ```
-   docker image ls
-   ```
+## 本地运行
 
-4. Run the Docker container:
-   ```
-   docker run -p 8080:8080 options-pricing:latest
-   ```
+推荐使用 Conda 创建独立 Python 环境。
 
-5. Access the app in your web browser at:
-   ```
-   http://0.0.0.0:8080/
-   ```
+### 1. 创建并激活环境
 
-### Using Google Cloud
+```powershell
+conda create -n option-pricing-models python=3.12 -y
+conda activate option-pricing-models
+```
 
-To deploy the Docker container to Google Cloud Platform (GCP), follow these steps:
+### 2. 安装依赖
 
-1. Prerequisites:
-   - Have a Google account
-   - Create a project on Google Cloud Console
-   - Set up billing for your project (be aware of GCP's pricing structure)
-   - Install and set up Google Cloud SDK
+```powershell
+pip install -r requirements.txt
+```
 
-2. Verify and set your GCP project:
-   - Check the current project:
-     ```
-     gcloud config get-value project
-     ```
-   - Set a different project if needed:
-     ```
-     gcloud config set project YOUR_PROJECT_NAME
-     ```
+### 3. 启动应用
 
-3. Deploy the application:
-   - Run the following command (uses the app.yaml file in your project):
-     ```
-     gcloud app deploy
-     ```
-   - Select the nearest server location when prompted
-   - Wait for the deployment process to complete
+```powershell
+streamlit run streamlit_app.py
+```
 
-4. Access your web app:
-   - After deployment, you'll receive a URL for your app
-   - The URL format will be: https://YOUR_PROJECT_NAME.REGION.r.appspot.com/
-   - You can also find this URL in the Google Cloud Console
+启动后在浏览器打开：
 
-Note: Ensure you understand GCP's pricing before deploying to avoid unexpected charges.
+```text
+http://localhost:8501
+```
 
-## Streamlit Web App Demonstrations
+之后再次启动项目时，只需要：
 
-### Black-Scholes Model
-![black-scholes-demo](media/Black_Scholes_Model.gif)
+```powershell
+conda activate option-pricing-models
+streamlit run streamlit_app.py
+```
 
-### Monte Carlo Option Pricing
-![monte-carlo-demo](media/Monte_Carlo_Option_Pricing.gif)
+## Docker 运行
 
-### Binomial Model
-![binomial-tree-demo](media/Binomial_Model.gif)
+如果已经安装 Docker，也可以通过容器运行：
 
-By following these instructions, you can easily set up and explore the option pricing models using the Streamlit web app. Feel free to experiment with different parameters and see how they affect the calculated option prices.
+```powershell
+docker build -t options-pricing:latest .
+docker run -p 8080:8080 options-pricing:latest
+```
+
+然后打开：
+
+```text
+http://127.0.0.1:8080
+```
+
+## 数据来源
+
+项目使用 `yfinance` 获取 Yahoo Finance 上的行情数据，典型调用方式如下：
+
+```python
+import yfinance as yf
+
+data = yf.Ticker("AAPL").history(period="1d")
+current_price = data["Close"].iloc[-1]
+```
+
+`history()` 返回的是 `pandas.DataFrame`，常见字段包括：
+
+```text
+Open, High, Low, Close, Volume, Dividends, Stock Splits
+```
+
+其中项目主要使用 `Close` 作为标的资产价格。
+
+需要注意的是，`yfinance` 是第三方开源库，不是 Yahoo 官方 API。它适合个人学习、研究和课程项目使用；如果要用于商业产品、批量抓取或对外提供行情数据，应使用正式授权的数据服务。
+
+## 依赖版本
+
+核心依赖记录在 `requirements.txt` 中：
+
+```text
+streamlit
+matplotlib
+numpy
+pandas
+scipy
+yfinance
+```
+
+当前项目已调整为可在 Python 3.12 环境下运行。
+
+## 演示
+
+### Black-Scholes 模型
+
+![Black-Scholes 演示](media/Black_Scholes_Model.gif)
+
+### 蒙特卡洛期权定价
+
+![蒙特卡洛演示](media/Monte_Carlo_Option_Pricing.gif)
+
+### 二叉树模型
+
+![二叉树演示](media/Binomial_Model.gif)

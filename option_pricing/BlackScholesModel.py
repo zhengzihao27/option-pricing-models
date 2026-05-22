@@ -1,32 +1,32 @@
-# Third party imports
+# 第三方依赖
 import numpy as np
 from scipy.stats import norm 
 
-# Local package imports
+# 本地包依赖
 from .base import OptionPricingModel
 
 
 class BlackScholesModel(OptionPricingModel):
     """ 
-    Class implementing calculation for European option price using Black-Scholes Formula.
+    使用 Black-Scholes 公式计算欧式期权价格。
 
-    Call/Put option price is calculated with following assumptions:
-    - European option can be exercised only on maturity date.
-    - Underlying stock does not pay divident during option's lifetime.  
-    - The risk free rate and volatility are constant.
-    - Efficient Market Hypothesis - market movements cannot be predicted.
-    - Lognormal distribution of underlying returns.
+    看涨/看跌期权价格基于以下假设计算：
+    - 欧式期权只能在到期日行权。
+    - 标的股票在期权有效期内不分红。
+    - 无风险利率和波动率保持不变。
+    - 有效市场假说：市场走势无法被预测。
+    - 标的资产收益服从对数正态分布。
     """
 
     def __init__(self, underlying_spot_price, strike_price, days_to_maturity, risk_free_rate, sigma):
         """
-        Initializes variables used in Black-Scholes formula .
+        初始化 Black-Scholes 公式所需变量。
 
-        underlying_spot_price: current stock or other underlying spot price
-        strike_price: strike price for option cotract
-        days_to_maturity: option contract maturity/exercise date
-        risk_free_rate: returns on risk-free assets (assumed to be constant until expiry date)
-        sigma: volatility of the underlying asset (standard deviation of asset's log returns)
+        underlying_spot_price: 股票或其他标的资产当前现货价格
+        strike_price: 期权合约行权价
+        days_to_maturity: 距期权到期/行权日的天数
+        risk_free_rate: 无风险资产收益率（假设到期前保持不变）
+        sigma: 标的资产波动率（资产对数收益率的标准差）
         """
         self.S = underlying_spot_price
         self.K = strike_price
@@ -36,13 +36,13 @@ class BlackScholesModel(OptionPricingModel):
 
     def _calculate_call_option_price(self): 
         """
-        Calculates price for call option according to the formula.        
-        Formula: S*N(d1) - PresentValue(K)*N(d2)
+        根据公式计算看涨期权价格。
+        公式：S*N(d1) - PresentValue(K)*N(d2)
         """
-        # cumulative function of standard normal distribution (risk-adjusted probability that the option will be exercised)     
+        # 标准正态分布的累积分布函数（风险调整后的行权概率）
         d1 = (np.log(self.S / self.K) + (self.r + 0.5 * self.sigma ** 2) * self.T) / (self.sigma * np.sqrt(self.T))
         
-        # cumulative function of standard normal distribution (probability of receiving the stock at expiration of the option)
+        # 标准正态分布的累积分布函数（期权到期时获得股票的概率）
         d2 = (np.log(self.S / self.K) + (self.r - 0.5 * self.sigma ** 2) * self.T) / (self.sigma * np.sqrt(self.T))
         
         return (self.S * norm.cdf(d1, 0.0, 1.0) - self.K * np.exp(-self.r * self.T) * norm.cdf(d2, 0.0, 1.0))
@@ -50,13 +50,13 @@ class BlackScholesModel(OptionPricingModel):
 
     def _calculate_put_option_price(self): 
         """
-        Calculates price for put option according to the formula.        
-        Formula: PresentValue(K)*N(-d2) - S*N(-d1)
+        根据公式计算看跌期权价格。
+        公式：PresentValue(K)*N(-d2) - S*N(-d1)
         """  
-        # cumulative function of standard normal distribution (risk-adjusted probability that the option will be exercised)    
+        # 标准正态分布的累积分布函数（风险调整后的行权概率）
         d1 = (np.log(self.S / self.K) + (self.r + 0.5 * self.sigma ** 2) * self.T) / (self.sigma * np.sqrt(self.T))
 
-        # cumulative function of standard normal distribution (probability of receiving the stock at expiration of the option)
+        # 标准正态分布的累积分布函数（期权到期时获得股票的概率）
         d2 = (np.log(self.S / self.K) + (self.r - 0.5 * self.sigma ** 2) * self.T) / (self.sigma * np.sqrt(self.T))
         
         return (self.K * np.exp(-self.r * self.T) * norm.cdf(-d2, 0.0, 1.0) - self.S * norm.cdf(-d1, 0.0, 1.0))

@@ -28,30 +28,33 @@ def get_current_price(ticker):
         st.error(f"Error fetching current price for {ticker}: {str(e)}")
         return None
 
-# Ignore the Streamlit warning for using st.pyplot()
-st.set_option('deprecation.showPyplotGlobalUse', False)
+# 兼容旧版 Streamlit 中 st.pyplot() 的弃用提示配置。
+try:
+    st.set_option('deprecation.showPyplotGlobalUse', False)
+except st.errors.StreamlitAPIException:
+    pass
 
-# Main title
+# 主标题
 st.title('Option pricing')
 
-# User selected model from sidebar 
+# 用户在侧边栏选择的定价模型
 pricing_method = st.sidebar.radio('Please select option pricing method', options=[model.value for model in OPTION_PRICING_MODEL])
 
-# Displaying specified model
+# 显示当前选择的定价模型
 st.subheader(f'Pricing method: {pricing_method}')
 
 if pricing_method == OPTION_PRICING_MODEL.BLACK_SCHOLES.value:
-    # Parameters for Black-Scholes model
+    # Black-Scholes 模型参数
     ticker = st.text_input('Ticker symbol', 'AAPL')
     st.caption("Enter the stock symbol (e.g., AAPL for Apple Inc.)")
 
-    # Fetch current price
+    # 获取当前价格
     current_price = get_current_price(ticker)
     
     if current_price is not None:
         st.write(f"Current price of {ticker}: ${current_price:.2f}")
         
-        # Set default and min/max values based on current price
+        # 根据当前价格设置默认值、最小值和最大值
         default_strike = round(current_price, 2)
         min_strike = max(0.1, round(current_price * 0.5, 2))
         max_strike = round(current_price * 2, 2)
@@ -106,17 +109,17 @@ if pricing_method == OPTION_PRICING_MODEL.BLACK_SCHOLES.value:
         st.info("Click 'Calculate option price' to see results.")
 
 elif pricing_method == OPTION_PRICING_MODEL.MONTE_CARLO.value:
-    # Parameters for Monte Carlo simulation
+    # 蒙特卡洛模拟参数
     ticker = st.text_input('Ticker symbol', 'AAPL')
     st.caption("Enter the stock symbol (e.g., AAPL for Apple Inc.)")
 
-    # Fetch current price
+    # 获取当前价格
     current_price = get_current_price(ticker)
     
     if current_price is not None:
         st.write(f"Current price of {ticker}: ${current_price:.2f}")
         
-        # Set default and min/max values based on current price
+        # 根据当前价格设置默认值、最小值和最大值
         default_strike = round(current_price, 2)
         min_strike = max(0.1, round(current_price * 0.5, 2))
         max_strike = round(current_price * 2, 2)
@@ -166,8 +169,8 @@ elif pricing_method == OPTION_PRICING_MODEL.MONTE_CARLO.value:
                 MC = MonteCarloPricing(spot_price, strike_price, days_to_maturity, risk_free_rate, sigma, number_of_simulations)
                 MC.simulate_prices()
 
-                MC.plot_simulation_results(num_of_movements)
-                st.pyplot()
+                fig = MC.plot_simulation_results(num_of_movements)
+                st.pyplot(fig)
 
                 call_option_price = MC.calculate_option_price('Call Option')
                 put_option_price = MC.calculate_option_price('Put Option')
@@ -182,17 +185,17 @@ elif pricing_method == OPTION_PRICING_MODEL.MONTE_CARLO.value:
         st.info("Click 'Calculate option price' to see results.")
 
 elif pricing_method == OPTION_PRICING_MODEL.BINOMIAL.value:
-    # Parameters for Binomial-Tree model
+    # 二叉树模型参数
     ticker = st.text_input('Ticker symbol', 'AAPL')
     st.caption("Enter the stock symbol (e.g., AAPL for Apple Inc.)")
 
-    # Fetch current price
+    # 获取当前价格
     current_price = get_current_price(ticker)
     
     if current_price is not None:
         st.write(f"Current price of {ticker}: ${current_price:.2f}")
         
-        # Set default and min/max values based on current price
+        # 根据当前价格设置默认值、最小值和最大值
         default_strike = round(current_price, 2)
         min_strike = max(0.1, round(current_price * 0.5, 2))
         max_strike = round(current_price * 2, 2)

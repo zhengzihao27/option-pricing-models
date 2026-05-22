@@ -42,10 +42,10 @@ class Ticker:
         if column_name not in data.columns:
             raise ValueError(f"Column '{column_name}' not found in the DataFrame")
         
-        plt.figure(figsize=(10, 6))
-        data[column_name].plot()
-        plt.ylabel(column_name)
-        plt.xlabel('Date')
-        plt.title(f'Historical data for {ticker} - {column_name}')
-        plt.legend(loc='best')
-        return plt
+        fig, ax = plt.subplots(figsize=(10, 6))
+        data[column_name].plot(ax=ax)
+        ax.set_ylabel(column_name)
+        ax.set_xlabel('Date')
+        ax.set_title(f'Historical data for {ticker} - {column_name}')
+        ax.legend(loc='best')
+        return fig
